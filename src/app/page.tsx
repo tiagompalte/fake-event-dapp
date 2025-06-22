@@ -6,12 +6,13 @@ import ConnectWallet from './components/ConnectWallet';
 import DisconnectWallet from './components/DisconnectWallet';
 import MessageDisplay from './components/MessageDisplay';
 import TicketPurchaseForm from './components/TicketPurchaseForm';
+import TicketNFTsPage from './components/TicketNFTsPage';
 
 export default function BuyTicketsPage() {
   const [wallet, setWallet] = useState<string>("");
   const [message, setMessage] = useState('');
   const [isPaused, setIsPaused] = useState<boolean>(true);
-  
+  const [selectedTab, setSelectedTab] = useState<'buy' | 'my'>('buy');
 
   useEffect(() => {
     const wallet = localStorage.getItem("wallet");
@@ -67,7 +68,34 @@ export default function BuyTicketsPage() {
           </p>
         </>
       ) : (
-        <TicketPurchaseForm setMessage={setMessage} />
+        <>
+          <div className="w-full max-w-md mt-4">
+            <div className="flex border-b border-gray-700 mb-4">
+              <button
+                className={`flex-1 py-2 px-4 text-center border-b-2 ${selectedTab === 'buy' ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-400'}`}
+                onClick={() => setSelectedTab('buy')}
+                disabled={selectedTab === 'buy'}
+              >
+                Buy Tickets
+              </button>
+              <button
+                className={`flex-1 py-2 px-4 text-center border-b-2 ${selectedTab === 'my' ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-400'}`}
+                onClick={() => setSelectedTab('my')}
+                disabled={selectedTab === 'my'}
+              >
+                My Tickets
+              </button>
+            </div>
+            <div>
+              {selectedTab === 'buy' && (
+                <TicketPurchaseForm setMessage={setMessage} />
+              )}
+              {selectedTab === 'my' && (
+                <TicketNFTsPage />
+              )}
+            </div>
+          </div>
+        </>
       )}
       <DisconnectWallet btnLogoutClick={btnLogoutClick} />
       </>

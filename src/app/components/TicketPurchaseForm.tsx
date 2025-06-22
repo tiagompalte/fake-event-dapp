@@ -17,7 +17,7 @@ const TicketPurchaseForm: React.FC<TicketPurchaseFormProps> = ({
 }) => {
     const [selected, setSelected] = useState<TicketType>('2');
     const [quantity, setQuantity] = useState(1);
-    const [loadingTicketPrices, setLoadingTicketPrices] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(true);
     const [ticketPrices, setTicketPrices] = useState<Record<TicketType, number>>({} as Record<TicketType, number>);
 
     useEffect(() => {
@@ -25,7 +25,7 @@ const TicketPurchaseForm: React.FC<TicketPurchaseFormProps> = ({
     }, []);
 
     const loadTicketPrices = () => {
-        setLoadingTicketPrices(true);
+        setLoading(true);
         getPriceTickets().then(prices => {
           setTicketPrices({
             '0': parseFloat(prices[0]),
@@ -36,7 +36,7 @@ const TicketPurchaseForm: React.FC<TicketPurchaseFormProps> = ({
           console.error("Error loading ticket prices:", error);
           setMessage("Failed to load ticket prices.");
         }).finally(() => {
-          setLoadingTicketPrices(false);
+          setLoading(false);
         });
       };
     
@@ -55,10 +55,8 @@ const TicketPurchaseForm: React.FC<TicketPurchaseFormProps> = ({
 
   return (
     <>
-    {loadingTicketPrices ? (
-          <>
-            <p className="mt-4 text-lg text-gray-300">Loading ticket prices...</p>
-          </>
+    {loading ? (
+        <p className="mt-4 text-lg text-gray-300">Loading ticket prices...</p>
     ) : (
         <form onSubmit={handleBuy} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-sm">
         <div className="mb-4">
@@ -68,9 +66,9 @@ const TicketPurchaseForm: React.FC<TicketPurchaseFormProps> = ({
             onChange={e => setSelected(e.target.value as TicketType)}
             className="block text-gray-700 w-full border rounded py-2 px-3"
             >
-            <option value="0">VIP (${ticketPrices[0]})</option>
-            <option value="1">Premium (${ticketPrices[1]})</option>
-            <option value="2">Regular (${ticketPrices[2]})</option>
+            <option value="0">VIP ({ticketPrices[0]} ETH)</option>
+            <option value="1">Premium ({ticketPrices[1]} ETH)</option>
+            <option value="2">Regular ({ticketPrices[2]} ETH)</option>
             </select>
         </div>
         <div className="mb-4">
@@ -86,7 +84,7 @@ const TicketPurchaseForm: React.FC<TicketPurchaseFormProps> = ({
         </div>
         <div className="mb-4">
             <p className="text-gray-700 font-bold mb-2">
-            Total: ${((ticketPrices[selected] * 100) * quantity) / 100}
+            Total: {((ticketPrices[selected] * 100) * quantity) / 100} ETH
             </p>
         </div>
         <button
