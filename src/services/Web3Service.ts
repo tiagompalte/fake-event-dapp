@@ -1,5 +1,6 @@
 import { ethers, Contract, Transaction } from "ethers";
 import ABI from "./ABI.json";
+import QRCode from "qrcode";
 
 const VIP_TICKET = 0;
 const PREMIUM_TICKET = 1;
@@ -152,4 +153,26 @@ export async function getNFTsByWallet(): Promise<WalletNFTData[]> {
     }
 
     return nfts;
+}
+
+export async function generateTicketQRCode(ticketId: number, quantity: number): Promise<string> {
+    if (!window.ethereum) throw new Error(`Wallet not found!`);
+
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const address = await signer.getAddress();
+    const date = Date.now();
+
+    const message : any = {
+        ticketId,
+        quantity,
+        address,
+        date,
+    }
+
+    message.signature = await signer.signMessage(JSON.stringify(message));
+
+    const qrData = JSON.stringify(message);
+
+    return QRCode.toDataURL(qrData);
 }
