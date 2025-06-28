@@ -64,6 +64,22 @@ export async function buyTicket(ticketID: number, quantity: number) : Promise<st
     return tx.hash;
 }
 
+export async function waitForTransaction(txHash: string, retries = 20, interval = 3000): Promise<boolean> {
+    for (let i = 0; i < retries; i++) {
+        const confirmed = await verifyTransaction(txHash);
+        if (confirmed) return true;
+        await new Promise(res => setTimeout(res, interval));
+    }
+    return false;
+}
+
+export async function verifyTransaction(txHash: string): Promise<boolean> {
+    if (!window.ethereum) throw new Error(`Wallet not found!`);
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const receipt = await provider.getTransactionReceipt(txHash);
+    return !!receipt && receipt.status === 1;
+}
+
 export type AvailableNFTData = {
     id: string;
     name: string;

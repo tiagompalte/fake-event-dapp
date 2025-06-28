@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { buyTicket, getPriceTickets, getAvailableTicketNFTs, AvailableNFTData } from '@/services/Web3Service';
+import { buyTicket, getPriceTickets, getAvailableTicketNFTs, AvailableNFTData, waitForTransaction } from '@/services/Web3Service';
 
 type TicketType = '0' | '1' | '2';
 const TICKET_TYPES: Record<TicketType, string> = {
@@ -55,23 +55,37 @@ const TicketPurchaseForm: React.FC<TicketPurchaseFormProps> = ({
         }
     };
     
-    const handleBuy = (e: React.FormEvent) => {
-        e.preventDefault();
-        buyTicket(parseInt(selected), quantity)
-          .then(() => {
-            setMessage(`Successfully bought ${quantity} ${TICKET_TYPES[selected]} ticket(s)!`);
-            setQuantity(1); // Reset quantity after purchase
-          })
-          .catch(error => {
-            console.error("Error buying ticket:", error);
-            setMessage("Failed to buy ticket. Please try again.");
-          });
-      };
+    const handleBuy = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setLoading(true);
+      setMessage("Buying ticket...");
+
+      try {
+        const txHash = await buyTicket(parseInt(selected), quantity)
+        if (txHash === null) {
+          setMessage("Failed to buy ticket. Please try again.");
+          return;
+        }
+
+        const transactionIsDone = await waitForTransaction(txHash)
+        if (!transactionIsDone) {
+          setMessage("Transaction failed or timed out. Please try again.");
+          return;
+        }
+
+        setMessage(`Successfully bought ${quantity} ${TICKET_TYPES[selected]} ticket(s)!`);
+      } catch (error) {
+        console.error("Error buying ticket:", error);
+        setMessage("Failed to buy ticket. Please try again.");
+      } finally {
+        setLoading(false);
+      }     
+    };
 
   return (
     <>
     {loading ? (
-        <p className="mt-4 text-lg text-gray-300">Loading ticket prices...</p>
+        <p className="mt-4 text-lg text-gray-300">Loading...</p>
     ) : (
       <div className="flex flex-col gap-8 items-start justify-center my-8">
         <div className="flex flex-row gap-6">
