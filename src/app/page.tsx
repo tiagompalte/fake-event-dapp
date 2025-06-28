@@ -69,7 +69,7 @@ export default function BuyTicketsPage() {
         </>
       ) : (
         <>
-          <div className="w-full max-w-md mt-4">
+          <div className="max-h-md mt-4">
             <div className="flex border-b border-gray-700 mb-4">
               <button
                 className={`flex-1 py-2 px-4 text-center border-b-2 ${selectedTab === 'buy' ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-400'}`}

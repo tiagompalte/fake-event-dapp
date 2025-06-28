@@ -64,52 +64,74 @@ export async function buyTicket(ticketID: number, quantity: number) : Promise<st
     return tx.hash;
 }
 
-type NFTData = {
-    tokenId: string;
+export type AvailableNFTData = {
+    id: string;
     name: string;
     description: string;
     image: string;
-    ticketType: string;
-    owner: string;
-    quantity: bigint;
+    price: string;
 };
 
-async function fetchNFTData(contract: Contract, ownerAddress: string, tokenId: number, tokenBalance: bigint): Promise<NFTData[]> {
-    const nfts: NFTData[] = [];
-    for (let i = 0; i < tokenBalance; i++) {
+function formatIPFSUrl(url: string): string {
+    if (url.startsWith("ipfs://")) {
+        return `https://ipfs.io/ipfs/${url.slice(7)}`;
+    }
+    return url;
+}
+
+export async function getAvailableTicketNFTs(): Promise<AvailableNFTData[]> {
+    if (!window.ethereum) throw new Error(`Wallet not found!`);
+
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+    const nfts: AvailableNFTData[] = [];
+
+    for (const tokenId of TICKET_TYPES) {
         const tokenURI: string = await contract.uri(tokenId);
-        const tokenData: any = await fetch(tokenURI).then(res => res.json());
+        const price: bigint = await contract.tokenPrices(tokenId);
+        const tokenData: AvailableNFTData = await fetch(formatIPFSUrl(tokenURI)).then(res => res.json());
         nfts.push({
-            tokenId: tokenId.toString(),
+            id: tokenId.toString(),
             name: tokenData.name,
             description: tokenData.description,
-            image: tokenData.image,
-            ticketType: tokenData.ticketType,
-            owner: ownerAddress,
-            quantity: tokenBalance,
+            image: formatIPFSUrl(tokenData.image),
+            price: ethers.formatEther(price),
         });
     }
 
     return nfts;
 }
 
-export async function getTicketNFTs(): Promise<NFTData[]> {
+export type WalletNFTData = {
+    id: string;
+    name: string;
+    description: string;
+    image: string;
+    quantity: string;
+};
+
+export async function getNFTsByWallet(): Promise<WalletNFTData[]> {
     if (!window.ethereum) throw new Error(`Wallet not found!`);
 
     const provider = new ethers.BrowserProvider(window.ethereum);
     const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-
-    const accounts: string[] = await provider.send("eth_requestAccounts", []);
-    const ownerAddress = accounts[0];
-
-    const nfts: NFTData[] = [];
+    const signer = await provider.getSigner();
+    const walletAddress: string = await signer.getAddress();
+    const nfts: WalletNFTData[] = [];
 
     for (const tokenId of TICKET_TYPES) {
-        const tokenBalance: bigint = await contract.balanceOf(ownerAddress, tokenId);
-
-        if (tokenBalance > 0) {
-            const nftData = await fetchNFTData(contract, ownerAddress, tokenId, tokenBalance);
-            nfts.push(...nftData);
+        const balance: bigint = await contract.balanceOf(walletAddress, tokenId);
+        console.log(`Balance for token ID ${tokenId}: ${balance}`);
+        if (balance > 0) {
+            const tokenURI: string = await contract.uri(tokenId);
+            const tokenData: WalletNFTData = await fetch(formatIPFSUrl(tokenURI)).then(res => res.json());
+            nfts.push({
+                id: tokenId.toString(),
+                name: tokenData.name,
+                description: tokenData.description,
+                image: formatIPFSUrl(tokenData.image),
+                quantity: balance.toString(),
+            });
         }
     }
 

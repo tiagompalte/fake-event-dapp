@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getTicketNFTs } from '@/services/Web3Service';
+import { getNFTsByWallet } from '@/services/Web3Service';
 
 const TicketNFTsPage: React.FC = () => {
     const [nfts, setNfts] = useState<any[]>([]);
@@ -13,7 +13,7 @@ const TicketNFTsPage: React.FC = () => {
     const loadTicketNFTs = async () => {
         setLoading(true);
         try {
-            const fetchedNFTs = await getTicketNFTs();
+            const fetchedNFTs = await getNFTsByWallet();
             setNfts(fetchedNFTs);
         } catch (err) {
             console.error("Error loading ticket NFTs:", err);
@@ -37,10 +37,18 @@ const TicketNFTsPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {nfts.map((nft, index) => (
                     <div key={index} className="border rounded p-4">
-                        <h2 className="font-bold">{nft.name}</h2>
-                        <p>Ticket Type: {nft.ticketType}</p>
-                        <p>Owner: {nft.owner}</p>
-                        <p>Token ID: {nft.tokenId}</p>
+                        {nft.image && (
+                            <img src={nft.image} alt={nft.name} className="w-full h-40 object-cover mb-2 rounded" />
+                        )}
+                        <h2 className="font-bold text-lg mb-1">{nft.name}</h2>
+                        <p className="mb-1">Description: {nft.description}</p>
+                        <p className="mb-1">Quantity: {nft.quantity ?? 1}</p>
+                        <button
+                            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                            onClick={() => {/* TODO: Implement QR code generation */}}
+                        >
+                            Generate QR Code
+                        </button>
                     </div>
                 ))}
             </div>

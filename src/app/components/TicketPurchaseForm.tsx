@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { buyTicket, getPriceTickets } from '@/services/Web3Service';
+import { buyTicket, getPriceTickets, getAvailableTicketNFTs, AvailableNFTData } from '@/services/Web3Service';
 
 type TicketType = '0' | '1' | '2';
 const TICKET_TYPES: Record<TicketType, string> = {
@@ -19,9 +19,11 @@ const TicketPurchaseForm: React.FC<TicketPurchaseFormProps> = ({
     const [quantity, setQuantity] = useState(1);
     const [loading, setLoading] = useState<boolean>(true);
     const [ticketPrices, setTicketPrices] = useState<Record<TicketType, number>>({} as Record<TicketType, number>);
+    const [nfts, setNfts] = useState<AvailableNFTData[]>([]);
 
     useEffect(() => {
         loadTicketPrices();
+        loadTicketNFTs();
     }, []);
 
     const loadTicketPrices = () => {
@@ -39,6 +41,19 @@ const TicketPurchaseForm: React.FC<TicketPurchaseFormProps> = ({
           setLoading(false);
         });
       };
+
+    const loadTicketNFTs = async () => {
+        setLoading(true);
+        try {
+            const fetchedNFTs = await getAvailableTicketNFTs();
+            setNfts(fetchedNFTs);
+        } catch (err) {
+            console.error("Error loading ticket NFTs:", err);
+            setMessage("Failed to load ticket NFTs.");
+        } finally {
+            setLoading(false);
+        }
+    };
     
     const handleBuy = (e: React.FormEvent) => {
         e.preventDefault();
@@ -58,42 +73,77 @@ const TicketPurchaseForm: React.FC<TicketPurchaseFormProps> = ({
     {loading ? (
         <p className="mt-4 text-lg text-gray-300">Loading ticket prices...</p>
     ) : (
-        <form onSubmit={handleBuy} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-sm">
-        <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">Ticket Type</label>
-            <select
-            value={selected}
-            onChange={e => setSelected(e.target.value as TicketType)}
-            className="block text-gray-700 w-full border rounded py-2 px-3"
+      <div className="flex flex-col gap-8 items-start justify-center my-8">
+        <div className="flex flex-row gap-6">
+          {nfts.map(nft => (
+            <div
+              key={nft.id}
+              className={`relative border-2 rounded-lg shadow-lg p-6 w-80 cursor-pointer transition-all ${
+                selected === nft.id
+                  ? 'border-blue-600 ring-2 ring-blue-400'
+                  : 'border-gray-200 hover:border-blue-400'
+              } bg-white`}
+              onClick={() => setSelected(nft.id as TicketType)}
             >
-            <option value="0">VIP ({ticketPrices[0]} ETH)</option>
-            <option value="1">Premium ({ticketPrices[1]} ETH)</option>
-            <option value="2">Regular ({ticketPrices[2]} ETH)</option>
-            </select>
+              {/* NFT Image Placeholder */}
+              <div className="flex justify-center mb-4">
+                <img
+                  src={nft.image}
+                  alt={`${TICKET_TYPES[nft.id as TicketType]} NFT`}
+                  className="h-32 w-32 object-contain rounded"
+                />
+              </div>
+              <div className="text-center">
+                <h3 className="text-xl text-gray-700 font-bold mb-2">{TICKET_TYPES[nft.id as TicketType]}</h3>
+                <p className="text-gray-700 mb-2">{nft.price} ETH</p>
+                <button
+                  className={`mt-2 px-4 py-2 rounded font-semibold ${
+                    selected === nft.id
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-blue-100'
+                  }`}
+                  onClick={e => {
+                    e.stopPropagation();
+                    setSelected(nft.id as TicketType);
+                  }}
+                  type="button"
+                >
+                  {selected === nft.id ? 'Selected' : 'Select'}
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
-        <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">Quantity</label>
-            <input
-            type="number"
-            min={1}
-            max={10}
-            value={quantity}
-            onChange={e => setQuantity(Number(e.target.value))}
-            className="block text-gray-700 w-full border rounded py-2 px-3"
-            />
+        <div className="flex justify-center items-center w-full">
+          <form
+            onSubmit={handleBuy}
+            className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-sm"
+          >
+            <div className="mb-4">
+              <label className="block text-gray-700 font-bold mb-2">Quantity</label>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={quantity}
+                onChange={e => setQuantity(Number(e.target.value))}
+                className="block text-gray-700 w-full border rounded py-2 px-3"
+              />
+            </div>
+            <div className="mb-4">
+              <p className="text-gray-700 font-bold mb-2">
+                Total: {((ticketPrices[selected] * 100) * quantity) / 100} ETH
+              </p>
+            </div>
+            <button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
+            >
+              Buy
+            </button>
+          </form>
         </div>
-        <div className="mb-4">
-            <p className="text-gray-700 font-bold mb-2">
-            Total: {((ticketPrices[selected] * 100) * quantity) / 100} ETH
-            </p>
-        </div>
-        <button
-            type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
-        >
-            Buy
-        </button>
-        </form>
+      </div>
     )}
     </>
   );

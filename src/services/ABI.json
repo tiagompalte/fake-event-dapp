@@ -10,6 +10,11 @@
         "internalType": "string",
         "name": "_uri",
         "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_serverUrl",
+        "type": "string"
       }
     ],
     "stateMutability": "nonpayable",
@@ -672,6 +677,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "serverUrl",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -703,6 +721,19 @@
       }
     ],
     "name": "setMaxSupply",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "newServerURL",
+        "type": "string"
+      }
+    ],
+    "name": "setServerURL",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
