@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import {login, verifyPause} from '@/services/Web3Service';
-import ConnectWallet from './components/ConnectWallet';
-import DisconnectWallet from './components/DisconnectWallet';
-import MessageDisplay from './components/MessageDisplay';
-import TicketPurchaseForm from './components/TicketPurchaseForm';
-import TicketNFTsPage from './components/TicketNFTsPage';
+import ConnectWallet from '@components/ConnectWallet';
+import DisconnectWallet from '@components/DisconnectWallet';
+import MessageDisplay from '@components/MessageDisplay';
+import TicketPurchaseForm from '@components/TicketPurchaseForm';
+import TicketNFTsPage from '@components/TicketNFTsPage';
 
 export default function BuyTicketsPage() {
   const [wallet, setWallet] = useState<string>("");
