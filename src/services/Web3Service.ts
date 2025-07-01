@@ -1,4 +1,4 @@
-import { ethers, Contract, Transaction } from "ethers";
+import { ethers, Contract, TransactionResponse } from "ethers";
 import ABI from "./ABI.json";
 import QRCode from "qrcode";
 
@@ -27,21 +27,6 @@ export async function login(): Promise<string> {
     return accounts[0];
 }
 
-export async function getPriceTickets(): Promise<Record<number, string>> {
-    if (!window.ethereum) throw new Error(`Wallet not found!`);
-
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-
-    const prices: [bigint, bigint, bigint] = await contract.getTokenPrices();
-
-    return {
-        [VIP_TICKET]: ethers.formatEther(prices[VIP_TICKET]),
-        [PREMIUM_TICKET]: ethers.formatEther(prices[PREMIUM_TICKET]),
-        [REGULAR_TICKET]: ethers.formatEther(prices[REGULAR_TICKET]),
-    };
-}
-
 export async function verifyPause(): Promise<boolean> {
     if (!window.ethereum) throw new Error(`Wallet not found!`);
     const provider = new ethers.BrowserProvider(window.ethereum);
@@ -50,28 +35,20 @@ export async function verifyPause(): Promise<boolean> {
     return isPaused;
 }
 
-export async function buyTicket(ticketID: number, quantity: number) : Promise<string | null> {
+export async function buyTicket(ticketID: number, quantity: number) : Promise<void> {
     const provider = new ethers.BrowserProvider(window.ethereum);
     const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
     
     const signer = await provider.getSigner();
     const instance = contract.connect(signer) as Contract;
-    const ticketPrices = await getPriceTickets();
 
-    const value = ethers.parseEther(ticketPrices[ticketID]) * ethers.toBigInt(quantity);
+    const price: bigint = await contract.tokenPrices(ticketID);
 
-    const tx = await instance.mint(ticketID, quantity, { value }) as Transaction;
+    const value = price * ethers.toBigInt(quantity);
 
-    return tx.hash;
-}
+    const tx = await instance.mint(ticketID, quantity, { value }) as TransactionResponse;
 
-export async function waitForTransaction(txHash: string, retries = 20, interval = 3000): Promise<boolean> {
-    for (let i = 0; i < retries; i++) {
-        const confirmed = await verifyTransaction(txHash);
-        if (confirmed) return true;
-        await new Promise(res => setTimeout(res, interval));
-    }
-    return false;
+    await tx.wait();
 }
 
 export async function verifyTransaction(txHash: string): Promise<boolean> {
@@ -87,6 +64,7 @@ export type AvailableNFTData = {
     description: string;
     image: string;
     price: string;
+    quantity: number;
 };
 
 function formatIPFSUrl(url: string): string {
@@ -96,23 +74,36 @@ function formatIPFSUrl(url: string): string {
     return url;
 }
 
-export async function getAvailableTicketNFTs(): Promise<AvailableNFTData[]> {
+async function getIPFSInfo(contract: ethers.Contract, tokenId: number): Promise<AvailableNFTData> {
+    const tokenURI = await contract.uri(tokenId)
+    const response = await fetch(formatIPFSUrl(tokenURI));
+    if (!response.ok) {
+        throw new Error(`Failed to fetch token data from IPFS: ${response.statusText}`);
+    }
+    return response.json();
+}
+
+export async function getAvailableTicketNFTs(): Promise<Map<string, AvailableNFTData>> {
     if (!window.ethereum) throw new Error(`Wallet not found!`);
 
     const provider = new ethers.BrowserProvider(window.ethereum);
     const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-    const nfts: AvailableNFTData[] = [];
+    const nfts = new Map<string, AvailableNFTData>();
 
     for (const tokenId of TICKET_TYPES) {
-        const tokenURI: string = await contract.uri(tokenId);
-        const price: bigint = await contract.tokenPrices(tokenId);
-        const tokenData: AvailableNFTData = await fetch(formatIPFSUrl(tokenURI)).then(res => res.json());
-        nfts.push({
+        const [tokenData, price, quantity] = await Promise.all([
+            getIPFSInfo(contract, tokenId),
+            contract.tokenPrices(tokenId),
+            contract.availableSupply(tokenId)
+        ])
+
+        nfts.set(tokenId.toString(), {
             id: tokenId.toString(),
             name: tokenData.name,
             description: tokenData.description,
             image: formatIPFSUrl(tokenData.image),
             price: ethers.formatEther(price),
+            quantity: ethers.toNumber(quantity)
         });
     }
 
