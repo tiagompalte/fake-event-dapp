@@ -39,13 +39,16 @@ export async function buyTicket(ticketID: number, quantity: number) : Promise<vo
     const provider = new ethers.BrowserProvider(window.ethereum);
     const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
     
-    const signer = await provider.getSigner();
-    const instance = contract.connect(signer) as Contract;
+    const availableQuantity = await contract.availableSupply(ticketID);
+    if (availableQuantity < quantity) {
+        throw new Error(`Not enough tickets available for ticket ID ${ticketID}. Available: ${availableQuantity}, Requested: ${quantity}`);
+    }
 
     const price: bigint = await contract.tokenPrices(ticketID);
-
     const value = price * ethers.toBigInt(quantity);
 
+    const signer = await provider.getSigner();
+    const instance = contract.connect(signer) as Contract;
     const tx = await instance.mint(ticketID, quantity, { value }) as TransactionResponse;
 
     await tx.wait();

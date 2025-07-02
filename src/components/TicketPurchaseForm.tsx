@@ -88,45 +88,58 @@ const TicketPurchaseForm: React.FC<TicketPurchaseFormProps> = ({
             <div
               key={nft.id}
               className={`relative border-2 rounded-lg shadow-lg p-6 w-80 cursor-pointer transition-all ${
-                selected === nft.id
-                  ? 'border-blue-600 ring-2 ring-blue-400'
-                  : 'border-gray-200 hover:border-blue-400'
+              selected === nft.id
+                ? 'border-blue-600 ring-2 ring-blue-400'
+                : 'border-gray-200 hover:border-blue-400'
               } bg-white`}
-              onClick={() => setSelected(nft.id as TicketType)}
+              onClick={() => nft.quantity > 0 && setSelected(nft.id as TicketType)}
               tabIndex={0}
               role="button"
               aria-pressed={selected === nft.id}
               onKeyUp={e => {
-                if (e.key === 'Enter' || e.key === ' ') setSelected(nft.id as TicketType);
+              if ((e.key === 'Enter' || e.key === ' ') && nft.quantity > 0) setSelected(nft.id as TicketType);
               }}
+              aria-disabled={nft.quantity === 0}
             >
               <div className="flex justify-center mb-4">
-                <img
-                  src={nft.image}
-                  alt={`${TICKET_TYPES[nft.id as TicketType]} NFT`}
-                  className="h-32 w-32 object-contain rounded"
-                  loading="lazy"
-                />
+              <img
+                src={nft.image}
+                alt={`${TICKET_TYPES[nft.id as TicketType]} NFT`}
+                className="h-32 w-32 object-contain rounded"
+                loading="lazy"
+                style={nft.quantity === 0 ? { filter: 'grayscale(1)', opacity: 0.5 } : {}}
+              />
               </div>
               <div className="text-center">
-                <h3 className="text-xl text-gray-700 font-bold mb-2">{TICKET_TYPES[nft.id as TicketType]}</h3>
-                <p className="text-gray-700 mb-2">{nft.price} ETH</p>
+              <h3 className="text-xl text-gray-700 font-bold mb-2">{TICKET_TYPES[nft.id as TicketType]}</h3>
+              <p className="text-gray-700 mb-2">{nft.price} ETH</p>
+              {nft.quantity === 0 ? (
+                <span className="inline-block mt-2 px-4 py-2 rounded font-semibold bg-gray-300 text-gray-600 cursor-not-allowed">
+                Sold out
+                </span>
+              ) : (
                 <button
-                  className={`mt-2 px-4 py-2 rounded font-semibold ${
-                    selected === nft.id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-blue-100'
-                  }`}
-                  onClick={e => {
-                    e.stopPropagation();
-                    setSelected(nft.id as TicketType);
-                  }}
-                  type="button"
-                  aria-pressed={selected === nft.id}
+                className={`mt-2 px-4 py-2 rounded font-semibold ${
+                  selected === nft.id
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-blue-100'
+                }`}
+                onClick={e => {
+                  e.stopPropagation();
+                  setSelected(nft.id as TicketType);
+                }}
+                type="button"
+                aria-pressed={selected === nft.id}
                 >
-                  {selected === nft.id ? 'Selected' : 'Select'}
+                {selected === nft.id ? 'Selected' : 'Select'}
                 </button>
+              )}
               </div>
+              {nft.quantity === 0 && (
+              <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
+                Sold out
+              </div>
+              )}
             </div>
           ))}
         </div>
