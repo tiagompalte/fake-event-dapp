@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    // reactStrictMode: true,
+    // basePath: '/',
     output: "export",
     env: {
         CONTRACT_ADDRESS: process.env.CONTRACT_ADDRESS,
