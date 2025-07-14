@@ -1,17 +1,26 @@
-# Fake Event DApp
+# 🚀 Fake Event DApp
 
-This is a decentralized application (DApp) built with [Next.js](https://nextjs.org) that simulates event creation and participation on the blockchain. The project was bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Welcome to **Fake Event DApp** – a decentralized application for creating and managing mock events, built with **React**, **TypeScript**, and **Vite**.
 
-## Features
+## ✨ Features
 
-- Create and manage fake events
-- Simulate blockchain interactions
-- Modern UI with [Geist](https://vercel.com/font)
-- Fast development with Next.js App Router
+- 📝 Create, edit, and delete fake events
+- 🔗 Simulate blockchain interactions for event management
+- ⚡ Lightning-fast development with Vite
+- 💡 Type-safe codebase with TypeScript
+- 🎨 Modern UI with React
 
-## Getting Started
+## 🚀 Getting Started
 
-To run the development server:
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/tiagompalte/fake-event-dapp.git
+cd fake-event-dapp
+npm install
+```
+
+Start the development server:
 
 ```bash
 npm run dev
@@ -23,28 +32,29 @@ pnpm dev
 bun dev
 ```
 
-Then open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:5173/](http://localhost:5173/) in your browser to view the app.
 
-You can start editing the app by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Project Structure
 
-## Project Structure
+```
+├── public/          # Static assets
+├── src/
+│   ├── components/  # Reusable React components
+│   ├── hooks/       # Custom React hooks
+│   ├── pages/       # Application pages
+│   └── App.tsx      # Main app component
+├── package.json
+└── README.md
+```
 
-- `app/` - Main application code
-- `components/` - Reusable UI components
-- `public/` - Static assets
+## 🤝 Contributing
 
-## Learn More
+Contributions are welcome! Please open issues or submit pull requests.
 
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Learn Next.js](https://nextjs.org/learn)
-- [Next.js GitHub](https://github.com/vercel/next.js)
+## 📄 License
 
-## Deployment
-
-Deploy easily on [Vercel](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
-
-See [Next.js deployment docs](https://nextjs.org/docs/app/building-your-application/deploying) for more info.
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-Made with ❤️ for learning and experimentation.his is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Made with ❤️ using React, TypeScript, and Vite.

@@ -1,12 +1,20 @@
 import React, {useEffect, useState} from 'react';
-import { buyTicket, getAvailableTicketNFTs, AvailableNFTData, verifyPause } from '@/services/Web3Service';
-import { ethers } from 'ethers';
+import { buyTicket, getAvailableTicketNFTs, verifyPause } from '../services/Web3Service';
 
 type TicketType = '0' | '1' | '2';
 const TICKET_TYPES: Record<TicketType, string> = {
   '0': 'VIP',
   '1': 'Premium',
   '2': 'Regular',
+};
+
+type AvailableNFTData = {
+    id: string;
+    name: string;
+    description: string;
+    image: string;
+    price: string;
+    quantity: number;
 };
 
 interface TicketPurchaseFormProps {
@@ -69,109 +77,107 @@ const TicketPurchaseForm: React.FC<TicketPurchaseFormProps> = ({
 
   if (isPaused) {
     return (
-      <>
-        <p className="mt-4 text-lg text-gray-300">
-          Ticket sales are currently paused.
-        </p>
-      </>
+      <div className="uk-alert-warning uk-text-center uk-margin-large-top uk-padding-small" data-uk-alert>
+        <span data-uk-icon="icon: ban" className="uk-margin-small-right"></span>
+        Ticket sales are currently paused.
+      </div>
     )
   }
 
   return (
     <>
     {loading ? (
-        <p className="mt-4 text-lg text-gray-300">Loading...</p>
-    ) : (
-      <div className="flex flex-col gap-8 items-start justify-center my-8">
-        <div className="flex flex-row flex-wrap gap-6 w-full md:flex-nowrap md:justify-start justify-center">
-          {Array.from(nfts.values()).map(nft => (
-        <div
-          key={nft.id}
-          className={`relative border-2 rounded-lg shadow-lg p-6 w-80 cursor-pointer transition-all ${
-          selected === nft.id
-            ? 'border-blue-600 ring-2 ring-blue-400'
-            : 'border-gray-200 hover:border-blue-400'
-          } bg-white`}
-          onClick={() => nft.quantity > 0 && setSelected(nft.id as TicketType)}
-          tabIndex={0}
-          role="button"
-          aria-pressed={selected === nft.id}
-          onKeyUp={e => {
-          if ((e.key === 'Enter' || e.key === ' ') && nft.quantity > 0) setSelected(nft.id as TicketType);
-          }}
-          aria-disabled={nft.quantity === 0}
-        >
-          <div className="flex justify-center mb-4">
-          <img
-            src={nft.image}
-            alt={`${TICKET_TYPES[nft.id as TicketType]} NFT`}
-            className="h-32 w-32 object-contain rounded"
-            loading="lazy"
-            style={nft.quantity === 0 ? { filter: 'grayscale(1)', opacity: 0.5 } : {}}
-          />
-          </div>
-          <div className="text-center">
-          <h3 className="text-xl text-gray-700 font-bold mb-2">{TICKET_TYPES[nft.id as TicketType]}</h3>
-          <p className="text-gray-700 mb-2">{nft.price} ETH</p>
-          {nft.quantity === 0 ? (
-            <span className="inline-block mt-2 px-4 py-2 rounded font-semibold bg-gray-300 text-gray-600 cursor-not-allowed">
-            Sold out
-            </span>
-          ) : (
-            <button
-            className={`mt-2 px-4 py-2 rounded font-semibold ${
-          selected === nft.id
-          ? 'bg-blue-600 text-white'
-          : 'bg-gray-200 text-gray-700 hover:bg-blue-100'
-            }`}
-            onClick={e => {
-          e.stopPropagation();
-          setSelected(nft.id as TicketType);
-            }}
-            type="button"
-            aria-pressed={selected === nft.id}
-            >
-            {selected === nft.id ? 'Selected' : 'Select'}
-            </button>
-          )}
-          </div>
-          {nft.quantity === 0 && (
-          <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-            Sold out
-          </div>
-          )}
+        <div className="uk-text-center uk-margin-large-top">
+          <div data-uk-spinner="ratio: 2" className="uk-margin-small-bottom"></div>
+          <span className="uk-text-lead uk-text-muted">Loading tickets...</span>
         </div>
+    ) : (
+      <div className="uk-margin-large-top">
+        <div className="uk-grid-small uk-child-width-1-1 uk-child-width-1-3@m" data-uk-grid>
+          {Array.from(nfts.values()).map(nft => (
+            <div key={nft.id}>
+              <div
+                className={`uk-card uk-card-default uk-card-hover uk-card-body uk-border-rounded uk-box-shadow-medium uk-flex uk-flex-column uk-height-1-1 ${selected === nft.id ? 'uk-card-primary' : ''}`}
+                style={{ cursor: nft.quantity > 0 ? 'pointer' : 'not-allowed', opacity: nft.quantity === 0 ? 0.5 : 1 }}
+                onClick={() => nft.quantity > 0 && setSelected(nft.id as TicketType)}
+                tabIndex={0}
+                role="button"
+                aria-pressed={selected === nft.id}
+                aria-disabled={nft.quantity === 0}
+              >
+                <div className="uk-flex uk-flex-center uk-margin-small-bottom">
+                  <img
+                    src={nft.image}
+                    alt={`${TICKET_TYPES[nft.id as TicketType]} NFT`}
+                    className="uk-border-circle"
+                    style={{ width: 80, height: 80, objectFit: 'contain', filter: nft.quantity === 0 ? 'grayscale(1)' : undefined }}
+                  />
+                </div>
+                <h3 className="uk-card-title uk-text-center uk-margin-remove-bottom">{TICKET_TYPES[nft.id as TicketType]}</h3>
+                <p className="uk-text-center uk-text-lead uk-margin-remove">{nft.price} ETH</p>
+                <p className="uk-text-center uk-text-meta uk-margin-small">{nft.quantity > 0 ? `${nft.quantity} available` : 'Sold out'}</p>
+                {nft.quantity > 0 && (
+                  <button
+                    className={`uk-button uk-button-small uk-button-${selected === nft.id ? 'primary' : 'default'} uk-width-1-1 uk-margin-small-top`}
+                    type="button"
+                    aria-pressed={selected === nft.id}
+                    onClick={e => {
+                      e.stopPropagation();
+                      setSelected(nft.id as TicketType);
+                    }}
+                  >
+                    {selected === nft.id ? 'Selected ✓' : 'Select'}
+                  </button>
+                )}
+              </div>
+            </div>
           ))}
         </div>
-        <div className="flex justify-center items-center w-full">
-          <form
-        onSubmit={handleBuy}
-        className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-sm"
-          >
-        <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">Quantity</label>
-          <input
-            type="number"
-            min={1}
-            max={10}
-            value={quantity}
-            onChange={e => setQuantity(Number(e.target.value))}
-            className="block text-gray-700 w-full border rounded py-2 px-3"
-          />
-        </div>
-        <div className="mb-4">
-          <p className="text-gray-700 font-bold mb-2">
-            Total: {((Number(nfts.get(selected)?.price) * 100) * quantity) / 100} ETH
-          </p>
-        </div>
-        <button
-          type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
+        <form
+          onSubmit={handleBuy}
+          className="uk-form-stacked uk-card uk-card-default uk-card-body uk-border-rounded uk-box-shadow-medium uk-width-1-1 uk-width-1-2@m uk-margin-auto uk-margin-large-top"
         >
-          Buy
-        </button>
-          </form>
-        </div>
+          <div className="uk-margin">
+            <label className="uk-form-label">Quantity</label>
+            <div className="uk-form-controls">
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={quantity}
+                onChange={e => setQuantity(Number(e.target.value))}
+                className="uk-input"
+                style={{ fontWeight: 600 }}
+              />
+            </div>
+          </div>
+          <div className="uk-margin uk-card uk-card-small uk-card-body uk-background-muted uk-border-rounded">
+            <div className="uk-flex uk-flex-between uk-margin-small-bottom">
+              <span>Ticket Type:</span>
+              <span className="uk-text-bold">{TICKET_TYPES[selected]}</span>
+            </div>
+            <div className="uk-flex uk-flex-between uk-margin-small-bottom">
+              <span>Price per ticket:</span>
+              <span className="uk-text-bold">{nfts.get(selected)?.price} ETH</span>
+            </div>
+            <div className="uk-flex uk-flex-between uk-margin-small-bottom">
+              <span>Quantity:</span>
+              <span className="uk-text-bold">{quantity}</span>
+            </div>
+            <hr className="uk-divider-icon" />
+            <div className="uk-flex uk-flex-between uk-text-lead">
+              <span>Total:</span>
+              <span className="uk-text-primary">{((Number(nfts.get(selected)?.price) * 100) * quantity) / 100} ETH</span>
+            </div>
+          </div>
+          <button
+            type="submit"
+            className="uk-button uk-button-primary uk-width-1-1 uk-margin-top"
+          >
+            <span data-uk-icon="icon: credit-card" className="uk-margin-small-right"></span>
+            Buy
+          </button>
+        </form>
       </div>
     )}
     </>

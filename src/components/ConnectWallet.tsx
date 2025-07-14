@@ -15,7 +15,7 @@ const ConnectWallet: React.FC<ConnectWalletProps> = ({ btnLoginClick }) => {
                     className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center"
                     type="button"
                     onClick={btnLoginClick}>
-                    <img src="/wallet.png" width="64" className="pr-3" /> Connect your wallet
+                    <img src="https://img.icons8.com/?size=100&id=Oi106YG9IoLv&format=png&color=000000" width="64" className="pr-3" /> Connect your wallet
                 </button>
             </div>
         </>

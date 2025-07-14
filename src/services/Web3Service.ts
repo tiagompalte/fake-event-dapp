@@ -8,8 +8,8 @@ const REGULAR_TICKET = 2;
 
 const TICKET_TYPES = [VIP_TICKET, PREMIUM_TICKET, REGULAR_TICKET];
 
-const CONTRACT_ADDRESS: string = `${process.env.CONTRACT_ADDRESS}`;
-const CHAIN_ID: number = parseInt(`${process.env.CHAIN_ID}`);
+const CONTRACT_ADDRESS: string = import.meta.env.VITE_CONTRACT_ADDRESS
+const CHAIN_ID: number = import.meta.env.VITE_CHAIN_ID
 
 export async function login(): Promise<string> {
     if (!window.ethereum) throw new Error(`Wallet not found!`);

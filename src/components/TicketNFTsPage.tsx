@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getNFTsByWallet, generateTicketQRCode } from '@/services/Web3Service';
+import { getNFTsByWallet, generateTicketQRCode } from '../services/Web3Service';
 
 const TicketNFTsPage: React.FC = () => {
     const [nfts, setNfts] = useState<any[]>([]);
@@ -46,44 +46,51 @@ const TicketNFTsPage: React.FC = () => {
 
     return (
         <>
+        {/* UIkit Modal for QR Code */}
         {showQrModal && qrCodeData && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                <div className="bg-white rounded-lg p-6 shadow-lg relative">
+            <div className="uk-modal uk-open" style={{display: 'block', background: 'rgba(0,0,0,0.5)'}}>
+                <div className="uk-modal-dialog uk-modal-body uk-border-rounded uk-box-shadow-large" style={{maxWidth: 350}}>
                     <button
-                        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                        className="uk-modal-close-default uk-icon uk-close"
+                        type="button"
+                        aria-label="Close"
                         onClick={() => setShowQrModal(false)}
+                        style={{position: 'absolute', top: 10, right: 10}}
                     >
                         &times;
                     </button>
-                    <h3 className="text-lg font-bold mb-4">Ticket QR Code</h3>
-                    <img src={qrCodeData} alt="Ticket QR Code" className="mx-auto mb-4" />
+                    <h3 className="uk-modal-title uk-text-center uk-margin">Ticket QR Code</h3>
+                    <img src={qrCodeData} alt="Ticket QR Code" className="uk-align-center uk-margin" style={{maxWidth: 200}} />
                 </div>
             </div>
         )}
         {nfts.length === 0 && (
-            <p className="mt-4 text-lg text-gray-300">No ticket NFTs found in your wallet.</p>
+            <p className="uk-text-center uk-text-muted uk-margin-large-top uk-text-lead">No ticket NFTs found in your wallet.</p>
         )}
         {nfts.length > 0 && (
-            <div className="p-4">
-                <h1 className="text-2xl font-bold mb-4">Your Ticket NFTs</h1>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="uk-container uk-margin-top">
+                <h1 className="uk-heading-line uk-text-center"><span>Your Ticket NFTs</span></h1>
+                <div className="uk-child-width-1-1 uk-child-width-1-2@s uk-child-width-1-3@m uk-grid-small uk-grid-match" data-uk-grid>
                     {nfts.map((nft, index) => (
-                        <div key={index} className="border rounded p-4">
-                            {nft.image && (
-                                <img src={nft.image} alt={nft.name} className="w-full h-40 object-cover mb-2 rounded" />
-                            )}
-                            <h2 className="font-bold text-lg mb-1">{nft.name}</h2>
-                            <p className="mb-1">Description: {nft.description}</p>
-                            <p className="mb-1">Quantity: {nft.quantity ?? 1}</p>
-                            <button
-                                className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                                onClick={e => {
-                                    e.stopPropagation();
-                                    handleGenerateQRCode(nft.id);
-                                }}
-                            >
-                                Generate QR Code
-                            </button>
+                        <div key={index}>
+                            <div className="uk-card uk-card-default uk-card-hover uk-card-body uk-border-rounded uk-box-shadow-medium uk-flex uk-flex-column" style={{height: '100%'}}>
+                                {nft.image && (
+                                    <img src={nft.image} alt={nft.name} className="uk-border-rounded uk-margin-small-bottom" style={{width: '100%', height: 180, objectFit: 'cover'}} />
+                                )}
+                                <h2 className="uk-card-title uk-margin-small-bottom">{nft.name}</h2>
+                                <p className="uk-text-small uk-margin-remove">{nft.description}</p>
+                                <p className="uk-text-meta uk-margin-remove-top">Quantity: <span className="uk-text-bold">{nft.quantity ?? 1}</span></p>
+                                <button
+                                    className="uk-button uk-button-primary uk-width-1-1 uk-margin-small-top"
+                                    onClick={e => {
+                                        e.stopPropagation();
+                                        handleGenerateQRCode(nft.id);
+                                    }}
+                                >
+                                    <span data-uk-icon="icon: qrcode" className="uk-margin-small-right"></span>
+                                    Generate QR Code
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
