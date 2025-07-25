@@ -70,7 +70,10 @@ const TicketNFTsPage: React.FC = () => {
         {nfts.length > 0 && (
             <div className="uk-container uk-margin-top">
                 <h1 className="uk-heading-line uk-text-center"><span>Your Ticket NFTs</span></h1>
-                <div className="uk-child-width-1-1 uk-child-width-1-2@s uk-child-width-1-3@m uk-grid-small uk-grid-match" data-uk-grid>
+                <div
+                    className="uk-grid uk-child-width-1-1 uk-child-width-1-2@s uk-child-width-1-3@l uk-grid-small uk-grid-match"
+                    data-uk-grid
+                >
                     {nfts.map((nft, index) => (
                         <div key={index}>
                             <div className="uk-card uk-card-default uk-card-hover uk-card-body uk-border-rounded uk-box-shadow-medium uk-flex uk-flex-column" style={{height: '100%'}}>

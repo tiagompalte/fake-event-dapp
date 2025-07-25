@@ -93,7 +93,7 @@ const TicketPurchaseForm: React.FC<TicketPurchaseFormProps> = ({
         </div>
     ) : (
       <div className="uk-margin-large-top">
-        <div className="uk-grid-small uk-child-width-1-1 uk-child-width-1-3@m" data-uk-grid>
+        <div className="uk-grid uk-child-width-1-1 uk-child-width-1-2@s uk-child-width-1-3@l uk-grid-small uk-grid-match" data-uk-grid>
           {Array.from(nfts.values()).map(nft => (
             <div key={nft.id}>
               <div
